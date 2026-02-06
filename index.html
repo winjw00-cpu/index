@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>북구보건소 재활수첩</title>
+    <style>
+        :root {
+            --main-green: #2ecc71;
+            --dark-green: #27ae60;
+            --soft-bg: #f9fbf9;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            background-color: var(--soft-bg);
+            margin: 0; padding: 0;
+            display: flex; justify-content: center;
+        }
+
+        .mobile-container {
+            width: 100%; max-width: 480px; min-height: 100vh;
+            background: white; box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            padding: 20px; box-sizing: border-box;
+        }
+
+        /* 헤더 디자인 */
+        .header { text-align: center; padding: 20px 0; }
+        .header img { width: 50px; margin-bottom: 10px; } /* 보건소 로고 자리 */
+        .header h1 { font-size: 1.5rem; color: #333; margin: 0; }
+        .header p { color: var(--main-green); font-weight: bold; margin-top: 5px; }
+
+        /* 입력창 영역 */
+        .login-section {
+            margin-top: 50px; text-align: center;
+        }
+        .login-section input {
+            width: 80%; padding: 15px; font-size: 1.1rem;
+            border: 2px solid #eee; border-radius: 12px;
+            margin-bottom: 15px; outline: none; transition: 0.3s;
+        }
+        .login-section input:focus { border-color: var(--main-green); }
+        .btn-start {
+            width: 85%; padding: 15px; background: var(--main-green);
+            color: white; border: none; border-radius: 12px;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer;
+        }
+
+        /* 달력 영역 */
+        #mainContents { display: none; animation: fadeIn 0.5s; }
+        .month-title { font-size: 1.8rem; font-weight: 800; text-align: center; margin: 20px 0; color: #2c3e50; }
+        
+        .calendar-card {
+            background: #fff; border: 1px solid #eee; border-radius: 20px; padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .day { text-align: center; font-size: 0.8rem; font-weight: bold; color: #bbb; padding: 10px 0; }
+        
+        .date-cell {
+            aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; font-weight: 600; border-radius: 50%;
+            cursor: pointer; transition: 0.2s; border: 1px solid transparent;
+        }
+        .date-cell.checked { background: var(--main-green); color: white; transform: scale(1.1); }
+        .date-cell:active { background: #e0f9e8; }
+
+        /* 하단 안내 및 버튼 */
+        .footer-info {
+            background: #f1f8f4; padding: 15px; border-radius: 12px;
+            margin-top: 25px; font-size: 0.9rem; line-height: 1.6; color: #555;
+        }
+        .btn-send {
+            width: 100%; padding: 18px; background: #3498db;
+            color: white; border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: bold; margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="mobile-container">
+    <div class="header">
+        <h1>🏥 스마트 재활수첩</h1>
+        <p>울산 북구보건소</p>
+    </div>
+
+    <div id="loginArea" class="login-section">
+        <input type="text" id="userName" placeholder="성함을 입력해주세요" autocomplete="off">
+        <button class="btn-start" onclick="initApp()">나의 달력 열기</button>
+        <p style="font-size: 0.8rem; color: #999; margin-top: 20px;">정보는 본인 휴대폰에만 안전하게 저장됩니다.</p>
+    </div>
+
+    <div id="mainContents">
+        <div class="month-title" id="monthText"></div>
+        
+        <div class="calendar-card">
+            <div class="grid">
+                <div class="day" style="color:#ff6b6b">일</div><div class="day">월</div><div class="day">화</div>
+                <div class="day">수</div><div class="day">목</div><div class="day">금</div><div class="day" style="color:#48dbfb">토</div>
+            </div>
+            <div id="dateGrid" class="grid"></div>
+        </div>
+
+        <div class="footer-info">
+            ✅ <b>운동 완료!</b> : 오늘 운동을 마쳤다면 날짜를 터치하세요.<br>
+            ✅ <b>담당자 전송</b> : 일주일마다 아래 버튼을 눌러 담당 선생님께 기록을 보내주세요.
+        </div>
+
+        <button class="btn-send" onclick="sendData()">📤 기록 담당자에게 보내기</button>
+    </div>
+</div>
+
+<script>
+    let currentUser = "";
+    let exerciseDates = [];
+    const dateObj = new Date();
+    const currentYear = dateObj.getFullYear();
+    const currentMonth = dateObj.getMonth();
+
+    function initApp() {
+        const name = document.getElementById('userName').value.trim();
+        if(!name) return alert("성함을 정확히 입력해주세요.");
+        
+        currentUser = name;
+        document.getElementById('loginArea').style.display = 'none';
+        document.getElementById('mainContents').style.display = 'block';
+        document.getElementById('monthText').innerText = (currentMonth + 1) + "월 활동";
+
+        const saved = localStorage.getItem("rehab_user_" + currentUser);
+        exerciseDates = saved ? JSON.parse(saved) : [];
+        render();
+    }
+
+    function render() {
+        const grid = document.getElementById('dateGrid');
+        grid.innerHTML = "";
+
+        const startDay = new Date(currentYear, currentMonth, 1).getDay();
+        const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        for(let i=0; i<startDay; i++) grid.innerHTML += "<div></div>";
+
+        for(let i=1; i<=lastDate; i++) {
+            const dateKey = `${currentMonth + 1}/${i}`;
+            const isDone = exerciseDates.includes(dateKey);
+            
+            const cell = document.createElement('div');
+            cell.className = `date-cell ${isDone ? 'checked' : ''}`;
+            cell.innerText = i;
+            cell.onclick = () => {
+                if(exerciseDates.includes(dateKey)) {
+                    exerciseDates = exerciseDates.filter(d => d !== dateKey);
+                } else {
+                    exerciseDates.push(dateKey);
+                }
+                localStorage.setItem("rehab_user_" + currentUser, JSON.stringify(exerciseDates));
+                render();
+            };
+            grid.appendChild(cell);
+        }
+    }
+
+    function sendData() {
+        if(exerciseDates.length === 0) return alert("체크된 기록이 없습니다.");
+        
+        const sorted = exerciseDates.sort((a,b) => new Date(a) - new Date(b));
+        const message = `[북구보건소 재활보고]\n성함: ${currentUser}\n참여횟수: ${exerciseDates.length}회\n완료날짜: ${sorted.join(', ')}`;
+        
+        // 브라우저 호환성을 위해 prompt 사용 (가장 확실함)
+        window.prompt("아래 내용을 복사해서 담당자에게 카톡이나 문자로 보내주세요.", message);
+    }
+</script>
+
+</body>
+</html>
