@@ -6,45 +6,21 @@
     <title>북구보건소 모바일 재활수첩</title>
     <style>
         :root { --main-color: #2ecc71; --bg-color: #f9fbf9; }
-        body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; display: flex; justify-content: center; }
         .container { background: white; max-width: 400px; width: 100%; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 20px; box-sizing: border-box; border: 1px solid #eee; }
         h2 { color: var(--main-color); text-align: center; margin-bottom: 5px; }
         .info-text { text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 20px; }
         
         .user-section { margin-bottom: 20px; }
-        .user-section label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 5px; margin-left: 5px; }
-        input { width: 100%; padding: 15px; border: 2px solid #eef2ef; border-radius: 12px; outline: none; font-size: 1rem; box-sizing: border-box; }
+        .user-section label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        input { width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 12px; outline: none; font-size: 1rem; box-sizing: border-box; }
         input:focus { border-color: var(--main-color); }
         
-        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
-        .day-header { font-weight: bold; font-size: 0.8rem; color: #999; padding: 10px 0; }
-        .day { aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; font-size: 0.9rem; transition: 0.2s; border: 1px solid #f0f0f0; background: #fff; }
-        .day.selected { background-color: var(--main-color) !important; color: white; font-weight: bold; border: none; }
-        .day.today { border: 2px solid var(--main-color); color: var(--main-color); font-weight: bold; }
+        /* 달력 스타일 중요 */
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; margin-top: 10px; min-height: 250px; }
+        .day-header { font-weight: bold; font-size: 0.8rem; color: #ff7675; padding: 5px 0; }
+        .day-header:nth-child(7n) { color: #0984e3; } /* 토요일 */
+        .day-header:nth-child(7n+1) { color: #d63031; } /* 일요일 */
         
-        .btn-group { margin-top: 25px; display: flex; flex-direction: column; gap: 10px; }
-        .btn { width: 100%; padding: 18px; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-submit { background-color: var(--main-color); color: white; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
-        .btn-reset { background-color: #f1f1f1; color: #888; font-size: 0.9rem; }
-        
-        .copy-info { background: #f0f9f4; padding: 10px; border-radius: 10px; font-size: 0.8rem; color: #27ae60; margin-top: 10px; text-align: center; display: none; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h2>🌿 재활수첩</h2>
-    <p class="info-text">오늘 운동하셨나요? 날짜를 터치하세요!</p>
-
-    <div class="user-section">
-        <label>사용자 이름</label>
-        <input type="text" id="userName" placeholder="이름을 입력해주세요" onchange="saveName()">
-    </div>
-
-    <div id="calendarTitle" style="font-weight: bold; margin-bottom: 15px; text-align: center; font-size: 1.1rem;"></div>
-    <div class="calendar" id="calendarBoard"></div>
-
-    <div id="copyNotice" class="copy-info">✅ 이름과 기록이 모두 복사되었습니다!</div>
-
-    <div class="btn-group">
-        <button class="btn btn-submit" onclick="sendToNaver()">✅ 기록 전송하기
+        .day { aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; font-size: 0.95rem; background: #fff; border: 1px solid #f5f5f5; }
+        .day.selected { background-color: var(--main-color) !important; color: white; font-weight: bold; border: none
