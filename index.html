@@ -2,178 +2,159 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>북구보건소 재활수첩</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>북구보건소 모바일 재활수첩</title>
     <style>
-        :root {
-            --main-green: #2ecc71;
-            --dark-green: #27ae60;
-            --soft-bg: #f9fbf9;
-        }
-
-        body {
-            font-family: 'Pretendard', -apple-system, sans-serif;
-            background-color: var(--soft-bg);
-            margin: 0; padding: 0;
-            display: flex; justify-content: center;
-        }
-
-        .mobile-container {
-            width: 100%; max-width: 480px; min-height: 100vh;
-            background: white; box-shadow: 0 0 20px rgba(0,0,0,0.05);
-            padding: 20px; box-sizing: border-box;
-        }
-
-        /* 헤더 디자인 */
-        .header { text-align: center; padding: 20px 0; }
-        .header img { width: 50px; margin-bottom: 10px; } /* 보건소 로고 자리 */
-        .header h1 { font-size: 1.5rem; color: #333; margin: 0; }
-        .header p { color: var(--main-green); font-weight: bold; margin-top: 5px; }
-
-        /* 입력창 영역 */
-        .login-section {
-            margin-top: 50px; text-align: center;
-        }
-        .login-section input {
-            width: 80%; padding: 15px; font-size: 1.1rem;
-            border: 2px solid #eee; border-radius: 12px;
-            margin-bottom: 15px; outline: none; transition: 0.3s;
-        }
-        .login-section input:focus { border-color: var(--main-green); }
-        .btn-start {
-            width: 85%; padding: 15px; background: var(--main-green);
-            color: white; border: none; border-radius: 12px;
-            font-size: 1.2rem; font-weight: bold; cursor: pointer;
-        }
-
-        /* 달력 영역 */
-        #mainContents { display: none; animation: fadeIn 0.5s; }
-        .month-title { font-size: 1.8rem; font-weight: 800; text-align: center; margin: 20px 0; color: #2c3e50; }
+        :root { --main-color: #2ecc71; --bg-color: #f9fbf9; }
+        body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { background: white; max-width: 400px; width: 100%; border-radius: 20px; shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 20px; box-sizing: border-box; border: 1px solid #eee; }
+        h2 { color: var(--main-color); text-align: center; margin-bottom: 5px; }
+        .info-text { text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 20px; }
         
-        .calendar-card {
-            background: #fff; border: 1px solid #eee; border-radius: 20px; padding: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-        .day { text-align: center; font-size: 0.8rem; font-weight: bold; color: #bbb; padding: 10px 0; }
+        .user-section { margin-bottom: 20px; display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; outline: none; }
         
-        .date-cell {
-            aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; font-weight: 600; border-radius: 50%;
-            cursor: pointer; transition: 0.2s; border: 1px solid transparent;
-        }
-        .date-cell.checked { background: var(--main-green); color: white; transform: scale(1.1); }
-        .date-cell:active { background: #e0f9e8; }
-
-        /* 하단 안내 및 버튼 */
-        .footer-info {
-            background: #f1f8f4; padding: 15px; border-radius: 12px;
-            margin-top: 25px; font-size: 0.9rem; line-height: 1.6; color: #555;
-        }
-        .btn-send {
-            width: 100%; padding: 18px; background: #3498db;
-            color: white; border: none; border-radius: 12px;
-            font-size: 1.1rem; font-weight: bold; margin-top: 20px;
-            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
-        }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+        .day-header { font-weight: bold; font-size: 0.8rem; color: #999; padding: 10px 0; }
+        .day { aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; font-size: 0.9rem; transition: 0.2s; border: 1px solid #f0f0f0; }
+        .day:hover { background-color: #eef9f2; }
+        .day.selected { background-color: var(--main-color) !important; color: white; font-weight: bold; border: none; }
+        .day.today { border: 2px solid var(--main-color); color: var(--main-color); font-weight: bold; }
+        
+        .btn-group { margin-top: 25px; display: flex; flex-direction: column; gap: 10px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-submit { background-color: var(--main-color); color: white; }
+        .btn-reset { background-color: #eee; color: #666; }
     </style>
 </head>
 <body>
 
-<div class="mobile-container">
-    <div class="header">
-        <h1>🏥 스마트 재활수첩</h1>
-        <p>울산 북구보건소</p>
+<div class="container">
+    <h2>🌿 재활수첩</h2>
+    <p class="info-text">오늘 운동하셨나요? 날짜를 터치하세요!</p>
+
+    <div class="user-section">
+        <input type="text" id="userName" placeholder="성함을 입력하세요" onchange="saveName()">
     </div>
 
-    <div id="loginArea" class="login-section">
-        <input type="text" id="userName" placeholder="성함을 입력해주세요" autocomplete="off">
-        <button class="btn-start" onclick="initApp()">나의 달력 열기</button>
-        <p style="font-size: 0.8rem; color: #999; margin-top: 20px;">정보는 본인 휴대폰에만 안전하게 저장됩니다.</p>
-    </div>
-
-    <div id="mainContents">
-        <div class="month-title" id="monthText"></div>
-        
-        <div class="calendar-card">
-            <div class="grid">
-                <div class="day" style="color:#ff6b6b">일</div><div class="day">월</div><div class="day">화</div>
-                <div class="day">수</div><div class="day">목</div><div class="day">금</div><div class="day" style="color:#48dbfb">토</div>
-            </div>
-            <div id="dateGrid" class="grid"></div>
+    <div id="calendarTitle" style="font-weight: bold; margin-bottom: 10px; text-align: center;"></div>
+    <div class="calendar" id="calendarBoard">
         </div>
 
-        <div class="footer-info">
-            ✅ <b>운동 완료!</b> : 오늘 운동을 마쳤다면 날짜를 터치하세요.<br>
-            ✅ <b>담당자 전송</b> : 일주일마다 아래 버튼을 눌러 담당 선생님께 기록을 보내주세요.
-        </div>
-
-        <button class="btn-send" onclick="sendData()">📤 기록 담당자에게 보내기</button>
+    <div class="btn-group">
+        <button class="btn btn-submit" onclick="sendToNaver()">✅ 기록 전송하기</button>
+        <button class="btn btn-reset" onclick="resetData()">초기화</button>
     </div>
 </div>
 
 <script>
-    let currentUser = "";
     let exerciseDates = [];
-    const dateObj = new Date();
-    const currentYear = dateObj.getFullYear();
-    const currentMonth = dateObj.getMonth();
+    let currentUser = "";
+    const NAVER_FORM_URL = "https://naver.me/FVFg2j80"; // 
 
-    function initApp() {
-        const name = document.getElementById('userName').value.trim();
-        if(!name) return alert("성함을 정확히 입력해주세요.");
-        
-        currentUser = name;
-        document.getElementById('loginArea').style.display = 'none';
-        document.getElementById('mainContents').style.display = 'block';
-        document.getElementById('monthText').innerText = (currentMonth + 1) + "월 활동";
-
-        const saved = localStorage.getItem("rehab_user_" + currentUser);
-        exerciseDates = saved ? JSON.parse(saved) : [];
-        render();
+    function init() {
+        const savedName = localStorage.getItem('rehab_name');
+        if(savedName) {
+            document.getElementById('userName').value = savedName;
+            currentUser = savedName;
+            loadDates();
+        }
+        renderCalendar();
     }
 
-    function render() {
-        const grid = document.getElementById('dateGrid');
-        grid.innerHTML = "";
+    function saveName() {
+        currentUser = document.getElementById('userName').value;
+        localStorage.setItem('rehab_name', currentUser);
+        loadDates();
+        renderCalendar();
+    }
 
-        const startDay = new Date(currentYear, currentMonth, 1).getDay();
-        const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+    function loadDates() {
+        if(!currentUser) return;
+        const saved = localStorage.getItem(`rehab_user_${currentUser}`);
+        exerciseDates = saved ? JSON.parse(saved) : [];
+    }
 
-        for(let i=0; i<startDay; i++) grid.innerHTML += "<div></div>";
+    function renderCalendar() {
+        const board = document.getElementById('calendarBoard');
+        const title = document.getElementById('calendarTitle');
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        
+        title.innerText = `${year}년 ${month + 1}월`;
+        board.innerHTML = "";
+
+        const headers = ['일','월','화','수','목','금','토'];
+        headers.forEach(h => {
+            const div = document.createElement('div');
+            div.className = 'day-header';
+            div.innerText = h;
+            board.appendChild(div);
+        });
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+
+        for(let i=0; i<firstDay; i++) board.appendChild(document.createElement('div'));
 
         for(let i=1; i<=lastDate; i++) {
-            const dateKey = `${currentMonth + 1}/${i}`;
-            const isDone = exerciseDates.includes(dateKey);
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day';
+            if(dateStr === now.toISOString().split('T')[0]) dayDiv.classList.add('today');
+            if(exerciseDates.includes(dateStr)) dayDiv.classList.add('selected');
             
-            const cell = document.createElement('div');
-            cell.className = `date-cell ${isDone ? 'checked' : ''}`;
-            cell.innerText = i;
-            cell.onclick = () => {
-                if(exerciseDates.includes(dateKey)) {
-                    exerciseDates = exerciseDates.filter(d => d !== dateKey);
-                } else {
-                    exerciseDates.push(dateKey);
-                }
-                localStorage.setItem("rehab_user_" + currentUser, JSON.stringify(exerciseDates));
-                render();
-            };
-            grid.appendChild(cell);
+            dayDiv.innerText = i;
+            dayDiv.onclick = () => toggleDate(dateStr);
+            board.appendChild(dayDiv);
         }
     }
 
-    function sendData() {
-        if(exerciseDates.length === 0) return alert("체크된 기록이 없습니다.");
+    function toggleDate(date) {
+        if(!currentUser) return alert("성함을 먼저 입력해주세요!");
+        const index = exerciseDates.indexOf(date);
+        if(index > -1) exerciseDates.splice(index, 1);
+        else exerciseDates.push(date);
         
-        const sorted = exerciseDates.sort((a,b) => new Date(a) - new Date(b));
-        const message = `[북구보건소 재활보고]\n성함: ${currentUser}\n참여횟수: ${exerciseDates.length}회\n완료날짜: ${sorted.join(', ')}`;
-        
-        // 브라우저 호환성을 위해 prompt 사용 (가장 확실함)
-        window.prompt("아래 내용을 복사해서 담당자에게 카톡이나 문자로 보내주세요.", message);
+        localStorage.setItem(`rehab_user_${currentUser}`, JSON.stringify(exerciseDates));
+        renderCalendar();
     }
-</script>
 
+    function sendToNaver() {
+        if(!currentUser) return alert("성함을 입력해주세요.");
+        if(exerciseDates.length === 0) return alert("체크된 날짜가 없습니다.");
+
+        const sorted = exerciseDates.sort().join(', ');
+        const report = `성함: ${currentUser} / 총 횟수: ${exerciseDates.length}회 / 날짜: ${sorted}`;
+
+        // 1. 클립보드에 결과 복사
+        const tempElem = document.createElement('textarea');
+        tempElem.value = report;
+        document.body.appendChild(tempElem);
+        tempElem.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempElem);
+
+        alert("기록이 복사되었습니다!\n확인을 누르면 네이버 설문지로 이동합니다.\n'주관식 답변' 칸을 꾹 눌러 '붙여넣기' 해주세요.");
+
+        // 2. 네이버 폼으로 이동
+        if(NAVER_FORM_URL.includes("http")) {
+            window.location.href = NAVER_FORM_URL;
+        } else {
+            alert("관리자가 설문지 주소를 설정하지 않았습니다.");
+        }
+    }
+
+    function resetData() {
+        if(confirm("기록을 모두 지울까요?")) {
+            localStorage.removeItem(`rehab_user_${currentUser}`);
+            exerciseDates = [];
+            renderCalendar();
+        }
+    }
+
+    init();
+</script>
 </body>
 </html>
