@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>북구보건소 재활수첩</title>
     <style>
-        :root { --main-color: #4285f4; --bg-color: #f8f9fa; }
+        :root { --main-color: #28a745; --bg-color: #f8f9fa; } /* 보건소 느낌의 초록색으로 변경 */
         body { font-family: 'Pretendard', -apple-system, sans-serif; background: var(--bg-color); padding: 20px; display: flex; justify-content: center; margin: 0; }
         .container { background: white; max-width: 400px; width: 100%; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); box-sizing: border-box; }
         h2 { color: var(--main-color); text-align: center; margin-top: 0; margin-bottom: 5px; }
@@ -25,28 +25,32 @@
 <body>
 
 <div class="container">
-    <h2>🌿 재활수첩</h2>
-    <p class="info-text">성함 입력 후 날짜를 선택하고<br>아래 버튼을 눌러주세요.</p>
+    <h2>🌿 모바일 재활수첩</h2>
+    <p class="info-text">성함 입력 후 날짜를 누르고<br>아래 버튼을 누르면 기록이 끝납니다!</p>
+    
     <label>성함</label>
     <input type="text" id="userName" placeholder="성함을 입력해주세요" oninput="saveName()">
+    
     <div class="calendar-wrap">
         <div id="calendarTitle"></div>
         <div class="calendar" id="calendarBoard"></div>
     </div>
-    <button class="btn-submit" onclick="sendToGoogle()">기록 전송하기</button>
+    
+    <button class="btn-submit" id="submitBtn" onclick="submitToGoogle()">기록 완료하기</button>
 </div>
+
+<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted){alert('✅ 기록이 정상적으로 제출되었습니다!'); location.reload();}"></iframe>
 
 <script>
     let exerciseDates = [];
-    // 폼 ID만 정확히 추출하여 주소를 재구성했습니다.
-    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdidXJEHJPFcvWtx5rgu632LOjnqMEv7XD9hlUgcO4ppo2Hhw/viewform";
+    let submitted = false;
+    
+    // 1. 제출 주소 수정 (viewform -> formResponse)
+    const FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdidXJEHJPFcvWtx5rgu632LOjnqMEv7XD9hlUgcO4ppo2Hhw/formResponse";
 
     window.onload = function() {
         const savedName = localStorage.getItem('rehab_name');
-        if(savedName) {
-            document.getElementById('userName').value = savedName;
-            loadDates(savedName);
-        }
+        if(savedName) { document.getElementById('userName').value = savedName; loadDates(savedName); }
         renderCalendar();
     };
 
@@ -72,8 +76,7 @@
         const weekDays = ['일','월','화','수','목','금','토'];
         weekDays.forEach(d => {
             const div = document.createElement('div');
-            div.className = 'day-header';
-            div.innerText = d;
+            div.className = 'day-header'; div.innerText = d;
             board.appendChild(div);
         });
         const firstDay = new Date(year, month, 1).getDay();
@@ -99,21 +102,34 @@
         }
     }
 
-    function sendToGoogle() {
+    function submitToGoogle() {
         const name = document.getElementById('userName').value;
         if(!name || exerciseDates.length === 0) return alert("이름과 날짜를 확인해주세요.");
 
         const dateList = exerciseDates.sort((a,b) => new Date(a) - new Date(b)).join(", ");
         
-        // 필드 ID 재확인 완료
-        const nameID = "entry.1818165593";
-        const dateID = "entry.449174116";
+        // 폼 데이터 전송을 위한 가상 폼 생성
+        const form = document.createElement('form');
+        form.action = FORM_ACTION_URL;
+        form.method = 'POST';
+        form.target = 'hidden_iframe'; // 결과가 숨겨진 프레임으로 가게 함
 
-        // URL 생성 시 불필요한 파라미터 완전 제거
-        const finalUrl = `${FORM_URL}?usp=pp_url&${nameID}=${encodeURIComponent(name)}&${dateID}=${encodeURIComponent(dateList)}`;
+        const nameInput = document.createElement('input');
+        nameInput.name = "entry.1818165593";
+        nameInput.value = name;
+        form.appendChild(nameInput);
+
+        const dateInput = document.createElement('input');
+        dateInput.name = "entry.449174116";
+        dateInput.value = dateList;
+        form.appendChild(dateInput);
+
+        document.body.appendChild(form);
+        submitted = true;
+        form.submit(); // 전송!
         
-        alert("기록을 전송합니다. 구글 화면에서 [제출]을 눌러주세요.");
-        window.location.replace(finalUrl); // 히스토리를 남기지 않아 오류 발생 확률을 줄임
+        document.getElementById('submitBtn').innerText = "전송 중...";
+        document.getElementById('submitBtn').disabled = true;
     }
 </script>
 </body>
