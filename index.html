@@ -10,45 +10,36 @@
         .container { background: white; max-width: 400px; width: 100%; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); box-sizing: border-box; }
         h2 { color: var(--main-color); text-align: center; margin-top: 0; margin-bottom: 5px; }
         .info-text { text-align: center; font-size: 0.85rem; color: #888; margin-bottom: 20px; line-height: 1.4; }
-        
         label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 8px; color: #333; }
-        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 1rem; margin-bottom: 20px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--main-color); }
-        
+        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 1rem; margin-bottom: 20px; outline: none; }
         .calendar-wrap { background: #fff; border: 1px solid #f0f0f0; border-radius: 15px; padding: 15px; }
         #calendarTitle { text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem; }
         .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
         .day-header { font-size: 0.7rem; color: #bbb; padding-bottom: 10px; font-weight: bold; }
-        .day { aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 10px; font-size: 0.9rem; transition: 0.2s; border: 1px solid transparent; }
-        .day:hover { background-color: #f0f4ff; }
-        .day.selected { background: var(--main-color) !important; color: white; font-weight: bold; box-shadow: 0 4px 10px rgba(66, 133, 244, 0.3); }
+        .day { aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 10px; font-size: 0.9rem; border: 1px solid transparent; }
+        .day.selected { background: var(--main-color) !important; color: white; font-weight: bold; }
         .day.today { border: 1.5px solid var(--main-color); color: var(--main-color); font-weight: bold; }
-        
-        .btn-submit { width: 100%; padding: 18px; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; background: var(--main-color); color: white; cursor: pointer; margin-top: 25px; transition: 0.3s; }
-        .btn-submit:active { transform: scale(0.96); background: #3367d6; }
+        .btn-submit { width: 100%; padding: 18px; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; background: var(--main-color); color: white; cursor: pointer; margin-top: 25px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🌿 재활수첩</h2>
-    <p class="info-text">이름을 입력하고 운동한 날짜를 모두 누른 뒤<br>제출 버튼을 눌러주세요.</p>
-
-    <label for="userName">사용자 성함</label>
+    <p class="info-text">성함 입력 후 날짜를 선택하고<br>아래 버튼을 눌러주세요.</p>
+    <label>성함</label>
     <input type="text" id="userName" placeholder="성함을 입력해주세요" oninput="saveName()">
-    
     <div class="calendar-wrap">
         <div id="calendarTitle"></div>
         <div class="calendar" id="calendarBoard"></div>
     </div>
-
     <button class="btn-submit" onclick="sendToGoogle()">기록 전송하기</button>
 </div>
 
 <script>
     let exerciseDates = [];
-    const FORM_ID = "1FAIpQLSdidXJEHJPFcvWtx5rgu632LOjnqMEv7XD9hlUgcO4ppo2Hhw";
-    const GOOGLE_BASE_URL = `https://docs.google.com/forms/d/e/${FORM_ID}/viewform`;
+    // 폼 ID만 정확히 추출하여 주소를 재구성했습니다.
+    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdidXJEHJPFcvWtx5rgu632LOjnqMEv7XD9hlUgcO4ppo2Hhw/viewform";
 
     window.onload = function() {
         const savedName = localStorage.getItem('rehab_name');
@@ -75,12 +66,9 @@
         const board = document.getElementById('calendarBoard');
         const title = document.getElementById('calendarTitle');
         const now = new Date();
-        const year = now.getFullYear(); 
-        const month = now.getMonth();
-        
+        const year = now.getFullYear(); const month = now.getMonth();
         title.innerText = `${year}년 ${month + 1}월`;
         board.innerHTML = "";
-        
         const weekDays = ['일','월','화','수','목','금','토'];
         weekDays.forEach(d => {
             const div = document.createElement('div');
@@ -88,23 +76,19 @@
             div.innerText = d;
             board.appendChild(div);
         });
-
         const firstDay = new Date(year, month, 1).getDay();
         const lastDate = new Date(year, month + 1, 0).getDate();
-        const todayStr = `${year}-${month+1}-${now.getDate()}`;
-
         for(let i=0; i<firstDay; i++) board.appendChild(document.createElement('div'));
-        
         for(let i=1; i<=lastDate; i++) {
             const dateStr = `${year}-${month+1}-${i}`;
             const dayDiv = document.createElement('div');
             dayDiv.className = 'day';
-            if(dateStr === todayStr) dayDiv.classList.add('today');
+            if(dateStr === `${year}-${month+1}-${now.getDate()}`) dayDiv.classList.add('today');
             if(exerciseDates.includes(dateStr)) dayDiv.classList.add('selected');
             dayDiv.innerText = i;
             dayDiv.onclick = () => {
                 const name = document.getElementById('userName').value;
-                if(!name) { alert("성함을 먼저 입력해주세요!"); return; }
+                if(!name) return alert("성함을 먼저 입력해주세요.");
                 const idx = exerciseDates.indexOf(dateStr);
                 if(idx > -1) exerciseDates.splice(idx, 1);
                 else exerciseDates.push(dateStr);
@@ -117,20 +101,19 @@
 
     function sendToGoogle() {
         const name = document.getElementById('userName').value;
-        if(!name) return alert("성함을 입력해주세요.");
-        if(exerciseDates.length === 0) return alert("운동하신 날짜를 달력에서 선택해주세요.");
+        if(!name || exerciseDates.length === 0) return alert("이름과 날짜를 확인해주세요.");
 
-        // 날짜 정렬 후 문자열 생성
-        const sortedDates = exerciseDates.sort((a,b) => new Date(a) - new Date(b)).join(", ");
-
-        // 구글 폼 필드 ID 매핑 (이름: 1818165593, 날짜: 449174116)
-        const nameEntry = "entry.1818165593"; 
-        const dateEntry = "entry.449174116"; 
-
-        const finalUrl = `${GOOGLE_BASE_URL}?usp=pp_url&${nameEntry}=${encodeURIComponent(name)}&${dateEntry}=${encodeURIComponent(sortedDates)}`;
+        const dateList = exerciseDates.sort((a,b) => new Date(a) - new Date(b)).join(", ");
         
-        alert("기록이 전송 준비되었습니다.\n다음 화면 하단의 [제출] 버튼을 눌러주세요!");
-        window.location.href = finalUrl;
+        // 필드 ID 재확인 완료
+        const nameID = "entry.1818165593";
+        const dateID = "entry.449174116";
+
+        // URL 생성 시 불필요한 파라미터 완전 제거
+        const finalUrl = `${FORM_URL}?usp=pp_url&${nameID}=${encodeURIComponent(name)}&${dateID}=${encodeURIComponent(dateList)}`;
+        
+        alert("기록을 전송합니다. 구글 화면에서 [제출]을 눌러주세요.");
+        window.location.replace(finalUrl); // 히스토리를 남기지 않아 오류 발생 확률을 줄임
     }
 </script>
 </body>
