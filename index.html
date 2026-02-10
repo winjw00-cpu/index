@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>북구보건소 재활수첩</title>
     <style>
-        :root { --main-color: #28a745; --bg-color: #f8f9fa; } /* 보건소 느낌의 초록색으로 변경 */
+        :root { --main-color: #28a745; --bg-color: #f8f9fa; }
         body { font-family: 'Pretendard', -apple-system, sans-serif; background: var(--bg-color); padding: 20px; display: flex; justify-content: center; margin: 0; }
         .container { background: white; max-width: 400px; width: 100%; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); box-sizing: border-box; }
         h2 { color: var(--main-color); text-align: center; margin-top: 0; margin-bottom: 5px; }
@@ -20,13 +20,14 @@
         .day.selected { background: var(--main-color) !important; color: white; font-weight: bold; }
         .day.today { border: 1.5px solid var(--main-color); color: var(--main-color); font-weight: bold; }
         .btn-submit { width: 100%; padding: 18px; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; background: var(--main-color); color: white; cursor: pointer; margin-top: 25px; }
+        .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🌿 모바일 재활수첩</h2>
-    <p class="info-text">성함 입력 후 날짜를 누르고<br>아래 버튼을 누르면 기록이 끝납니다!</p>
+    <p class="info-text">성함 입력 후 날짜를 누르고<br>아래 버튼을 누르면 바로 제출됩니다.</p>
     
     <label>성함</label>
     <input type="text" id="userName" placeholder="성함을 입력해주세요" oninput="saveName()">
@@ -39,13 +40,12 @@
     <button class="btn-submit" id="submitBtn" onclick="submitToGoogle()">기록 완료하기</button>
 </div>
 
-<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted){alert('✅ 기록이 정상적으로 제출되었습니다!'); location.reload();}"></iframe>
+<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
 <script>
     let exerciseDates = [];
-    let submitted = false;
     
-    // 1. 제출 주소 수정 (viewform -> formResponse)
+    // 구글 폼 응답 전송 주소
     const FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdidXJEHJPFcvWtx5rgu632LOjnqMEv7XD9hlUgcO4ppo2Hhw/formResponse";
 
     window.onload = function() {
@@ -104,16 +104,18 @@
 
     function submitToGoogle() {
         const name = document.getElementById('userName').value;
+        const btn = document.getElementById('submitBtn');
         if(!name || exerciseDates.length === 0) return alert("이름과 날짜를 확인해주세요.");
 
         const dateList = exerciseDates.sort((a,b) => new Date(a) - new Date(b)).join(", ");
         
-        // 폼 데이터 전송을 위한 가상 폼 생성
+        // 1. 가상 폼 생성
         const form = document.createElement('form');
         form.action = FORM_ACTION_URL;
         form.method = 'POST';
-        form.target = 'hidden_iframe'; // 결과가 숨겨진 프레임으로 가게 함
+        form.target = 'hidden_iframe'; // 보이지 않는 프레임으로 쏘기
 
+        // 2. 데이터 입력
         const nameInput = document.createElement('input');
         nameInput.name = "entry.1818165593";
         nameInput.value = name;
@@ -124,12 +126,19 @@
         dateInput.value = dateList;
         form.appendChild(dateInput);
 
+        // 3. 전송
         document.body.appendChild(form);
-        submitted = true;
-        form.submit(); // 전송!
+        form.submit();
         
-        document.getElementById('submitBtn').innerText = "전송 중...";
-        document.getElementById('submitBtn').disabled = true;
+        // 4. 즉시 화면 처리
+        btn.innerText = "제출 완료되었습니다 ✅";
+        btn.disabled = true;
+        btn.style.background = "#6c757d";
+        
+        alert("✅ 제출이 완료되었습니다. 창을 닫으셔도 됩니다.");
+        
+        // 5. 사용한 가상 폼 제거
+        setTimeout(() => document.body.removeChild(form), 100);
     }
 </script>
 </body>
